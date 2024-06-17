@@ -3,6 +3,7 @@ package org.launchcode.techjobs.persistent.controllers;
 import jakarta.validation.Valid;
 import org.launchcode.techjobs.persistent.models.Employer;
 import org.launchcode.techjobs.persistent.models.Job;
+import org.launchcode.techjobs.persistent.models.Skill;
 import org.launchcode.techjobs.persistent.models.data.EmployerRepository;
 import org.launchcode.techjobs.persistent.models.data.JobRepository;
 import org.launchcode.techjobs.persistent.models.data.SkillRepository;
@@ -23,40 +24,44 @@ import java.util.Optional;
 public class HomeController {
 
     @Autowired
-    EmployerRepository employerRepository;
+    private EmployerRepository employerRepository;
 
     @Autowired
-    JobRepository jobRepository;
+    private JobRepository jobRepository;
 
     @Autowired
-    SkillRepository skillRepository;
+    private SkillRepository skillRepository;
 
     @RequestMapping("/")
     public String index(Model model) {
-
         model.addAttribute("title", "MyJobs");
-
+        model.addAttribute("jobs", jobRepository.findAll());
         return "index";
     }
 
     @GetMapping("add")
     public String displayAddJobForm(Model model) {
 	    model.addAttribute("title", "Add Job");
+        model.addAttribute(new Job());
         model.addAttribute("employers", employerRepository.findAll());
+        model.addAttribute("skills", skillRepository.findAll());
         return "add";
     }
 
     @PostMapping("add")
     public String processAddJobForm(@ModelAttribute @Valid Job newJob,
-                                       Errors errors, Model model, @RequestParam int employerId) {
+                                       Errors errors, Model model, @RequestParam int employerId, @RequestParam List<Integer> skills) {
+
+        List<Skill> skillObjs = (List<Skill>) skillRepository.findAllById(skills);
+        newJob.setSkills(skillObjs);
 
         if (errors.hasErrors()) {
 	    model.addAttribute("title", "Add Job");
             return "add";
         } else {
-            Optional<Employer> result = employerRepository.findById(employerId);
-            if (result.isPresent()){
-                Employer employer = result.get();
+            Optional<Employer> optEmployer = employerRepository.findById(employerId);
+            if (optEmployer.isPresent()){
+                Employer employer = optEmployer.get();
                 newJob.setEmployer(employer);
                 jobRepository.save(newJob);
             }
