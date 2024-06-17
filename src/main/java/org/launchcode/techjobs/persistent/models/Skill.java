@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 public class Skill extends AbstractEntity {
 
 
-    @NotBlank(message = "Location required. Please enter Location.")
+    @NotBlank(message = "Description required. Please enter Description.")
     @Size(max = 150, message = "Field cannot exceed 150 characters.")
     private String description;
 
